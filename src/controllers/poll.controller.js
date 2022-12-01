@@ -78,7 +78,7 @@ export async function getResult(req, res) {
             const choice = choiceList[i]._id;
 
             const voteList = await collectionVote.find( {choiceId: choice.toString()} ).toArray();
-
+    
             if (voteList.length > numberOfVotes) {
                 numberOfVotes = voteList.length;
                 titleChoice = choiceList[i].title;
