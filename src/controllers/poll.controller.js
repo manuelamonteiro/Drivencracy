@@ -56,3 +56,46 @@ export async function getChoice(req, res) {
     }
 
 }
+
+export async function getResult(req, res) {
+
+    const id = req.params.id;
+
+    try {
+        const poll = await collectionPoll.findOne({ _id: new ObjectId(id) });
+
+        if (!poll) {
+            res.status(404).send({ message: "A enquete não foi encontrada!" });
+            return;
+        }
+
+        const choiceList = await collectionChoice.find({ pollId: id }).toArray();
+
+        let numberOfVotes = 0;
+        let titleChoice = "A enquete não possui votos";
+
+        for (let i = 0; i < choiceList.length; i++) {
+            const choice = choiceList[i]._id;
+
+            const voteList = await collectionVote.find( {choiceId: choice.toString()} ).toArray();
+
+            if (voteList.length > numberOfVotes) {
+                numberOfVotes = voteList.length;
+                titleChoice = choiceList[i].title;
+            }
+        }
+
+        const result = {
+            title: poll.title,
+            expireAt: poll.expireAt,
+            result: {
+                title: titleChoice,
+                votes: numberOfVotes
+            }
+        }
+
+        res.status(200).send(result);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+}
