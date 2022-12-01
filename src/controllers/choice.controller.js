@@ -44,19 +44,37 @@ export async function postChoice(req, res) {
 
 }
 
-export async function getChoice(req, res) {
+export async function postVote(req, res) {
 
     const id = req.params.id;
 
     try {
-        const choiceList = await collectionChoice.find({ pollId: id }).toArray();
+        const choiceExists = await collectionChoice.findOne({ _id: new ObjectId(id) });
 
-        if (choiceList.length === 0) {
-            res.status(404).send({ message: "A enquete não existe!" });
+        if (!choiceExists) {
+            res.status(404).send({ message: "A opção não existe!" });
             return;
         }
 
-        res.status(200).send(choiceList);
+        const pollExists = await collectionPoll.findOne({ _id: new ObjectId(choiceExists.pollId) });
+
+        const pollExpire = pollExists.expireAt;
+
+        const isExpired = dayjs().isAfter(pollExpire, 'days');
+
+        if (isExpired) {
+            res.status(403).send({ message: "A enquete expirou!" });
+            return;
+        }
+
+        const vote = {
+            createdAt: dayjs().format('YYYY-MM-DD HH:mm'),
+            choiceId: id
+        };
+
+        await collectionVote.insertOne(vote);
+
+        res.status(201).send(vote);
     } catch (error) {
         res.status(500).send(error);
     }

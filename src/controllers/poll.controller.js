@@ -37,3 +37,22 @@ export async function getPoll(req, res) {
     }
 
 }
+
+export async function getChoice(req, res) {
+
+    const id = req.params.id;
+
+    try {
+        const choiceList = await collectionChoice.find({ pollId: id }).toArray();
+
+        if (choiceList.length === 0) {
+            res.status(404).send({ message: "A enquete não existe!" });
+            return;
+        }
+
+        res.status(200).send(choiceList);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+
+}
