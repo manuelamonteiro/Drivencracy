@@ -9,6 +9,8 @@ export async function postPoll(req, res) {
 
     if (!expireAt) {
         currentTime = dayjs().add(30, 'day').format('YYYY-MM-DD HH:mm');
+    } else {
+        currentTime = expireAt;
     }
 
     try {
@@ -77,8 +79,8 @@ export async function getResult(req, res) {
         for (let i = 0; i < choiceList.length; i++) {
             const choice = choiceList[i]._id;
 
-            const voteList = await collectionVote.find( {choiceId: choice.toString()} ).toArray();
-    
+            const voteList = await collectionVote.find({ choiceId: choice.toString() }).toArray();
+
             if (voteList.length > numberOfVotes) {
                 numberOfVotes = voteList.length;
                 titleChoice = choiceList[i].title;
